@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import netgame.common.Hub;
 import pkgPokerBLL.Action;
@@ -22,7 +23,7 @@ import pkgPokerBLL.Table;
 import pkgPokerEnum.eAction;
 import pkgPokerEnum.eCardDestination;
 import pkgPokerEnum.eDrawCount;
-import pokerEnums.eGame;
+import pkgPokerEnum.eGame;
 import pkgPokerEnum.eGameState;
 
 public class PokerHub extends Hub {
@@ -52,16 +53,14 @@ public class PokerHub extends Hub {
 			Player actPlayer = (Player) ((Action) message).getPlayer();
 			Action act = (Action) message;
 			switch (act.getAction()) {
-			case Sit:
-				//TODO: Lab #4 
-				//	Sit player at the table				
+			case Sit:			
 				resetOutput();
+				HubPokerTable.AddPlayerToTable(actPlayer);	
 				sendToAll(HubPokerTable);
 				break;
 			case Leave:
-				//TODO: Lab #4 
-				//	Remove player from the table
 				resetOutput();
+				HubPokerTable.RemovePlayerFromTable(actPlayer);
 				sendToAll(HubPokerTable);
 				break;
 			case TableState:
@@ -69,19 +68,20 @@ public class PokerHub extends Hub {
 				sendToAll(HubPokerTable);
 				break;
 			case StartGame:
-				// Get the rule from the Action object.
+				resetOutput();
+				eGame game = act.geteGame();
 				Rule rle = new Rule(act.geteGame());
+				UUID GameDealerID = null;
+				HubGamePlay = new GamePlay(rle,GameDealerID);
+				HubGamePlay.setGamePlayers(HubPokerTable.getHashPlayers());
 				
-				//TODO Lab #5 - If neither player has 'the button', pick a random player
-				//		and assign the button.				
-
-				//TODO Lab #5 - Start the new instance of GamePlay
-								
-				// Add Players to Game
-				
+				for(int i = 0; i <= 2; i++){
+					HubGamePlay.setPlayerNextToAct(HubGamePlay.getPlayerByPosition(i));
+				}
+				sendToAll(HubGamePlay);
+				break;								
+				// Add Players to Game		
 				// Set the order of players
-				
-
 
 			case Draw:
 

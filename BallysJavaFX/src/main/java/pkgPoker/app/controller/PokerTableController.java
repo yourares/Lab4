@@ -15,6 +15,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -26,6 +27,7 @@ import pkgPokerEnum.eAction;
 import pkgPokerEnum.eGame;
 import pkgPokerBLL.Action;
 import pkgPokerBLL.GamePlay;
+import pkgPokerBLL.Player;
 import pkgPokerBLL.Table;
 
 public class PokerTableController implements Initializable {
@@ -101,16 +103,29 @@ public class PokerTableController implements Initializable {
 	public void GetGameState() {
 	}
 
-	//TODO: Lab #4 - Complete (fix) setiPlayerPosition
-	public void btnSitLeave_Click(ActionEvent event) {
 
-		// Set the PlayerPosition in the Player
+	public void btnSitLeave_Click(ActionEvent event) {
+		Button btnSitLeave = (Button) event.getSource();
+		int playerposition = 0;
+		if (((Toggle) btnSitLeave).isSelected()){
+			switch (btnSitLeave.getId().toString()) {
+			case "btnPos1SitLeave":
+				mainApp.getPlayer().setiPlayerPosition(1);
+				break;
+			case "btnPos2SitLeave":
+				mainApp.getPlayer().setiPlayerPosition(2);
+				break;
+		}
+		}
+		else{
+			playerposition = 0;
+		}
+
+
 		mainApp.getPlayer().setiPlayerPosition(1);
 
-		// Build an Action message
 		Action act = new Action(eAction.Sit, mainApp.getPlayer());
 
-		// Send the Action to the Hub
 		mainApp.messageSend(act);
 	}
 
@@ -155,12 +170,61 @@ public class PokerTableController implements Initializable {
 
 	}
 
-	//TODO: Lab #4 Complete the implementation
 	public void Handle_TableState(Table HubPokerTable) {
+		lblPos1Name.setText("");
+		lblPos2Name.setText("");
 
+		btnPos1SitLeave.setVisible(true);
+		btnPos2SitLeave.setVisible(true);
+
+		btnPos1SitLeave.setText(btnPos1SitLeave.isSelected() ? "Leave" : "Sit");
+		btnPos2SitLeave.setText(btnPos2SitLeave.isSelected() ? "Leave" : "Sit");
+
+		btnStartGame.setDisable(HubPokerTable.getHashPlayers().size() > 0 ? false : true);
+
+		FadeButton(btnStartGame);
+
+		Iterator iterate = HubPokerTable.getHashPlayers().entrySet().iterator();
+
+		while (iterate.hasNext()) {
+			Map.Entry pair = (Map.Entry) iterate.next();
+			Player player = (Player) pair.getValue();
+			switch (player.getiPlayerPosition()) {
+
+			case 1:
+
+				if (player.getPlayerID().equals(mainApp.getPlayer().getPlayerID())) {
+
+					btnPos1SitLeave.setVisible(true);
+					btnPos2SitLeave.setVisible(false);
+
+				} else {
+					btnPos1SitLeave.setVisible(false);
+				}
+
+				lblPos1Name.setText(player.getPlayerName().toString());
+				break;
+
+			case 2:
+				if (player.getPlayerID().equals(mainApp.getPlayer().getPlayerID())) {
+					btnPos1SitLeave.setVisible(false);
+					btnPos2SitLeave.setVisible(true);
+
+				} else {
+					btnPos2SitLeave.setVisible(false);
+				}
+
+				lblPos2Name.setText(player.getPlayerName().toString());
+				break;
+				}
+
+		}
 	}
 
+
+
 	public void Handle_GameState(GamePlay HubPokerGame) {
+		
 		
 	}
 
